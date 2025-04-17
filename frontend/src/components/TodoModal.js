@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { addTodo, updateTodo } from '../slices/todoSlice';
+import { addTodoApi, updateTodoApi } from '../slices/todoSlice';
 import styles from '../styles/modules/modal.module.scss';
 import Button from './Button';
 
@@ -54,25 +54,37 @@ function TodoModal({ type, modalOpen, setModalOpen, todo }) {
     if (title && status) {
       if (type === 'add') {
         dispatch(
-          addTodo({
-            id: uuid(),
+          addTodoApi({
             title,
             status,
-            time: format(new Date(), 'p, MM/dd/yyyy'),
           })
-        );
-        toast.success('Task added successfully');
+        )
+          .unwrap()
+          .then(() => {
+            toast.success('Task added successfully');
+            setModalOpen(false);
+          })
+          .catch((error) => {
+            toast.error('Failed to add task');
+            console.error(error);
+          });
       }
       if (type === 'update') {
         if (todo.title !== title || todo.status !== status) {
-          dispatch(updateTodo({ ...todo, title, status }));
-          toast.success('Task Updated successfully');
+          dispatch(updateTodoApi({ ...todo, title, status }))
+            .unwrap()
+            .then(() => {
+              toast.success('Task updated successfully');
+              setModalOpen(false);
+            })
+            .catch((error) => {
+              toast.error('Failed to update task');
+              console.error(error);
+            });
         } else {
           toast.error('No changes made');
-          return;
         }
       }
-      setModalOpen(false);
     }
   };
 

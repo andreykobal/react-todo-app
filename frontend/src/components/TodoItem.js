@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
 import { MdDelete, MdEdit } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
-import { deleteTodo, updateTodo } from '../slices/todoSlice';
+import { deleteTodoApi, updateTodoApi } from '../slices/todoSlice';
 import styles from '../styles/modules/todoItem.module.scss';
 import { getClasses } from '../utils/getClasses';
 import CheckButton from './CheckButton';
@@ -34,13 +34,29 @@ function TodoItem({ todo }) {
   const handleCheck = () => {
     setChecked(!checked);
     dispatch(
-      updateTodo({ ...todo, status: checked ? 'incomplete' : 'complete' })
-    );
+      updateTodoApi({ ...todo, status: checked ? 'incomplete' : 'complete' })
+    )
+      .unwrap()
+      .then(() => {
+        toast.success(`Task marked as ${checked ? 'incomplete' : 'complete'}`);
+      })
+      .catch((error) => {
+        toast.error('Failed to update task status');
+        setChecked(!checked); // Revert the UI change
+        console.error(error);
+      });
   };
 
   const handleDelete = () => {
-    dispatch(deleteTodo(todo.id));
-    toast.success('Todo Deleted Successfully');
+    dispatch(deleteTodoApi(todo.id))
+      .unwrap()
+      .then(() => {
+        toast.success('Todo deleted successfully');
+      })
+      .catch((error) => {
+        toast.error('Failed to delete task');
+        console.error(error);
+      });
   };
 
   const handleUpdate = () => {
