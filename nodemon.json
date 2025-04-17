@@ -1,0 +1,8 @@
+{
+  "watch": ["*.js", "routes/", "models/", ".env"],
+  "ignore": ["frontend/", "node_modules/", "*.test.js", "*.spec.js"],
+  "ext": "js,json",
+  "delay": "500",
+  "verbose": true,
+  "exec": "node index.js"
+}
