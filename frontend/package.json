@@ -24,9 +24,7 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
-    "extends": [
-      "wesbos"
-    ],
+    "extends": [],
     "rules": {
       "import/no-extraneous-dependencies": [
         "error",
