@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/todo_app';
+const databaseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5433/todo_app';
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',

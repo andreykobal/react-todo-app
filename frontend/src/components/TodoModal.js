@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { MdOutlineClose } from 'react-icons/md';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { addTodoApi, updateTodoApi } from '../slices/todoSlice';
+import { addTodoApi, updateTodoApi, updateTodoAndClearOthersApi } from '../slices/todoSlice';
 import styles from '../styles/modules/modal.module.scss';
 import Button from './Button';
 
@@ -34,6 +34,7 @@ function TodoModal({ type, modalOpen, setModalOpen, todo }) {
   const dispatch = useDispatch();
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState('incomplete');
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     if (type === 'update' && todo) {
@@ -47,40 +48,85 @@ function TodoModal({ type, modalOpen, setModalOpen, todo }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if user is admin
+    if (!user?.isAdmin) {
+      toast.error('Only admin can add or update tasks');
+      setModalOpen(false);
+      return;
+    }
+    
     if (title === '') {
       toast.error('Please enter a title');
       return;
     }
     if (title && status) {
       if (type === 'add') {
-        dispatch(
-          addTodoApi({
-            title,
-            status,
-          })
-        )
-          .unwrap()
-          .then(() => {
-            toast.success('Task added successfully');
-            setModalOpen(false);
-          })
-          .catch((error) => {
-            toast.error('Failed to add task');
-            console.error(error);
-          });
-      }
-      if (type === 'update') {
-        if (todo.title !== title || todo.status !== status) {
-          dispatch(updateTodoApi({ ...todo, title, status }))
+        if (status === 'complete') {
+          dispatch(
+            addTodoApi({
+              title,
+              status: 'incomplete',
+            })
+          )
+            .unwrap()
+            .then((newTodo) => {
+              dispatch(updateTodoAndClearOthersApi({
+                ...newTodo,
+                status: 'complete',
+              }))
+                .then(() => {
+                  toast.success('Task added successfully');
+                  setModalOpen(false);
+                });
+            })
+            .catch((error) => {
+              toast.error('Failed to add task');
+              console.error(error);
+            });
+        } else {
+          dispatch(
+            addTodoApi({
+              title,
+              status,
+            })
+          )
             .unwrap()
             .then(() => {
-              toast.success('Task updated successfully');
+              toast.success('Task added successfully');
               setModalOpen(false);
             })
             .catch((error) => {
-              toast.error('Failed to update task');
+              toast.error('Failed to add task');
               console.error(error);
             });
+        }
+      }
+      if (type === 'update') {
+        if (todo.title !== title || todo.status !== status) {
+          if (status === 'complete' && todo.status !== 'complete') {
+            dispatch(updateTodoAndClearOthersApi({ ...todo, title, status }))
+              .unwrap()
+              .then(() => {
+                toast.success('Task updated successfully');
+                setModalOpen(false);
+              })
+              .catch((error) => {
+                toast.error('Failed to update task');
+                console.error(error);
+              });
+          } else {
+            dispatch(updateTodoApi({ ...todo, title, status }))
+              .unwrap()
+              .then(() => {
+                toast.success('Task updated successfully');
+                setModalOpen(false);
+              })
+              .catch((error) => {
+                toast.error('Failed to update task');
+                console.error(error);
+              });
+          }
         } else {
           toast.error('No changes made');
         }

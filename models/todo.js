@@ -19,6 +19,14 @@ const Todo = db.sequelize.define('Todo', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  userId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
+  }
 });
 
 export default Todo; 
