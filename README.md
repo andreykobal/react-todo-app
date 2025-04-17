@@ -100,3 +100,5 @@ For support, join our [Community Group](http://facebook.com/groups/webcifar).
 [MIT](https://choosealicense.com/licenses/mit/)
 
 Happy Coding! 🚀
+
+😊
