@@ -33,14 +33,13 @@ function TodoItem({ todo }) {
     if (!user) {
       setChecked(false);
     } else {
-      // For logged in users, show the actual completion status
-      if (todo.status === 'complete' && todo.userId === user.id) {
-        setChecked(true);
-      } else {
-        setChecked(false);
-      }
+      // For logged in users, check if they're in the completedBy array
+      const isCompletedByUser = todo.completedBy?.some(completedUser => 
+        completedUser.id === user.id
+      );
+      setChecked(isCompletedByUser || false);
     }
-  }, [todo.status, todo.userId, user]);
+  }, [todo, user]);
   
   // Open login modal when authentication is required
   useEffect(() => {
@@ -126,12 +125,20 @@ function TodoItem({ todo }) {
     <>
       <motion.div className={styles.item} variants={child}>
         <div className={styles.todoDetails}>
-          <CheckButton checked={checked} handleCheck={handleCheck} />
+          {user?.isAdmin ? (
+            <div className={styles.completionCount}>
+              <span className={styles.countBadge}>
+                {todo.completionCount || 0}
+              </span>
+            </div>
+          ) : (
+            <CheckButton checked={checked} handleCheck={handleCheck} />
+          )}
           <div className={styles.texts}>
             <p
               className={getClasses([
                 styles.todoText,
-                checked && styles['todoText--completed'],
+                checked && !user?.isAdmin && styles['todoText--completed'],
               ])}
             >
               {todo.title}

@@ -28,8 +28,10 @@ function AppContent() {
   const dispatch = useDispatch();
   const todoList = useSelector((state) => state.todo.todoList);
   const filterStatus = useSelector((state) => state.todo.filterStatus);
+  const sortOrder = useSelector((state) => state.todo.sortOrder);
   const status = useSelector((state) => state.todo.status);
   const error = useSelector((state) => state.todo.error);
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     if (status === 'idle') {
@@ -42,9 +44,23 @@ function AppContent() {
     }
   }, [status, dispatch]);
 
+  // First sort by date
   const sortedTodoList = [...todoList];
-  sortedTodoList.sort((a, b) => new Date(b.time) - new Date(a.time));
+  
+  // Apply completion count sorting for all users
+  sortedTodoList.sort((a, b) => {
+    // Sort by completion count
+    const countA = a.completionCount || 0;
+    const countB = b.completionCount || 0;
+    
+    if (sortOrder === 'asc') {
+      return countA - countB;
+    } else {
+      return countB - countA;
+    }
+  });
 
+  // Then filter by status
   const filteredTodoList = sortedTodoList.filter((item) => {
     if (filterStatus === 'all') {
       return true;

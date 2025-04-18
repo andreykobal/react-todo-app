@@ -7,12 +7,14 @@ import AppHeader from './components/AppHeader';
 import PageTitle from './components/PageTitle';
 import LoginHandler from './components/LoginHandler';
 import LoginModal from './components/LoginModal';
+import SocketManager from './components/SocketManager';
 import styles from './styles/modules/app.module.scss';
 import { fetchTodos } from './slices/todoSlice';
 
 function App() {
   const dispatch = useDispatch();
   const requireLogin = useSelector((state) => state.todo.requireLogin);
+  const user = useSelector((state) => state.auth.user);
   const [loginModalOpen, setLoginModalOpen] = React.useState(false);
   
   useEffect(() => {
@@ -31,8 +33,16 @@ function App() {
   
   return (
     <Router>
+      {/* Socket Manager for real-time updates */}
+      <SocketManager />
+      
       <div className="container">
-        <PageTitle>TODO List</PageTitle>
+        <PageTitle>
+          TODO List
+          {user?.isAdmin && (
+            <span style={{ color: 'red', marginLeft: '5px' }}>(admin)</span>
+          )}
+        </PageTitle>
         <div className={styles.app__wrapper}>
           <AppHeader />
           <AppContent />

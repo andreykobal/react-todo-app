@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import db from './models/index.js';
 import { User, Todo } from './models/associations.js';
 import todoRoutes from './routes/todos.js';
@@ -16,6 +18,20 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+
+// Create HTTP server and Socket.IO instance
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.NODE_ENV === 'production' 
+      ? false 
+      : ['http://localhost:3000', 'http://localhost:3001'],
+    methods: ['GET', 'POST']
+  }
+});
+
+// Make io accessible to routes
+app.set('io', io);
 
 // Middleware
 app.use(cors());
@@ -32,6 +48,15 @@ app.use(express.static(path.join(__dirname, 'frontend/build')));
 // Anything that doesn't match the above, send back index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend/build/index.html'));
+});
+
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('A client connected', socket.id);
+  
+  socket.on('disconnect', () => {
+    console.log('Client disconnected', socket.id);
+  });
 });
 
 // Initialize database connection
@@ -73,7 +98,7 @@ const initDb = async () => {
 };
 
 // Start server
-app.listen(PORT, async () => {
+httpServer.listen(PORT, async () => {
   await initDb();
   console.log(`Server running on port ${PORT}`);
   console.log(`Open http://localhost:${PORT} in your browser`);

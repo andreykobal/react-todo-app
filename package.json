@@ -24,6 +24,7 @@
     "pg-hstore": "^2.3.4",
     "resend": "^4.3.0",
     "sequelize": "^6.35.1",
+    "socket.io": "^4.8.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

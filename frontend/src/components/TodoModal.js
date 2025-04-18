@@ -85,21 +85,21 @@ function TodoModal({ type, modalOpen, setModalOpen, todo }) {
               console.error(error);
             });
         } else {
-          dispatch(
-            addTodoApi({
-              title,
-              status,
-            })
-          )
-            .unwrap()
-            .then(() => {
-              toast.success('Task added successfully');
-              setModalOpen(false);
-            })
-            .catch((error) => {
-              toast.error('Failed to add task');
-              console.error(error);
-            });
+        dispatch(
+          addTodoApi({
+            title,
+            status,
+          })
+        )
+          .unwrap()
+          .then(() => {
+            toast.success('Task added successfully');
+            setModalOpen(false);
+          })
+          .catch((error) => {
+            toast.error('Failed to add task');
+            console.error(error);
+          });
         }
       }
       if (type === 'update') {
@@ -116,16 +116,16 @@ function TodoModal({ type, modalOpen, setModalOpen, todo }) {
                 console.error(error);
               });
           } else {
-            dispatch(updateTodoApi({ ...todo, title, status }))
-              .unwrap()
-              .then(() => {
-                toast.success('Task updated successfully');
-                setModalOpen(false);
-              })
-              .catch((error) => {
-                toast.error('Failed to update task');
-                console.error(error);
-              });
+          dispatch(updateTodoApi({ ...todo, title, status }))
+            .unwrap()
+            .then(() => {
+              toast.success('Task updated successfully');
+              setModalOpen(false);
+            })
+            .catch((error) => {
+              toast.error('Failed to update task');
+              console.error(error);
+            });
           }
         } else {
           toast.error('No changes made');

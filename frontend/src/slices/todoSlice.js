@@ -97,20 +97,24 @@ export const updateTodoAndClearOthersApi = createAsyncThunk(
     
     const updatedTodo = await response.json();
     
-    // If the todo was marked as complete, uncheck all other todos owned by this user
+    // If the todo was marked as complete, uncheck all other todos completed by this user
     if (updatedTodo.status === 'complete') {
       const state = getState();
-      const otherTodos = state.todo.todoList.filter(
-        item => item.id !== todo.id && item.status === 'complete' && item.userId === userId
+      const otherCompletedTodos = state.todo.todoList.filter(item => 
+        item.id !== todo.id && 
+        item.completedBy?.some(user => user.id === userId)
       );
       
       // Update each completed todo to be incomplete
-      for (const otherTodo of otherTodos) {
+      for (const otherTodo of otherCompletedTodos) {
         dispatch(
           updateTodoStatusApi({ id: otherTodo.id, status: 'incomplete' })
         );
       }
     }
+    
+    // Fetch all todos again to ensure completion counts are updated
+    dispatch(fetchTodos());
     
     return updatedTodo;
   }
@@ -138,6 +142,7 @@ const initialValue = {
   error: null,
   requireLogin: false,
   pendingTodo: null,
+  sortOrder: 'asc', // Default sort order for completion count
 };
 
 export const todoSlice = createSlice({
@@ -152,6 +157,26 @@ export const todoSlice = createSlice({
     },
     setPendingTodo: (state, action) => {
       state.pendingTodo = action.payload;
+    },
+    updateSortOrder: (state, action) => {
+      state.sortOrder = action.payload;
+    },
+    // Socket event handlers
+    todoCreated: (state, action) => {
+      state.todoList.push(action.payload);
+    },
+    todoUpdated: (state, action) => {
+      const index = state.todoList.findIndex(
+        (todo) => todo.id === action.payload.id
+      );
+      if (index !== -1) {
+        state.todoList[index] = action.payload;
+      }
+    },
+    todoDeleted: (state, action) => {
+      state.todoList = state.todoList.filter(
+        (todo) => todo.id !== action.payload
+      );
     },
   },
   extraReducers: (builder) => {
@@ -183,7 +208,12 @@ export const todoSlice = createSlice({
           (todo) => todo.id === action.payload.id
         );
         if (index !== -1) {
+          // Replace the todo with the updated one from the API
           state.todoList[index] = action.payload;
+          
+          // Update completedBy and completionCount
+          state.todoList[index].completedBy = action.payload.completedBy || [];
+          state.todoList[index].completionCount = action.payload.completionCount || 0;
         }
       })
       .addCase(updateTodoAndClearOthersApi.fulfilled, (state, action) => {
@@ -222,5 +252,13 @@ export const todoSlice = createSlice({
   },
 });
 
-export const { updateFilterStatus, setRequireLogin, setPendingTodo } = todoSlice.actions;
+export const { 
+  updateFilterStatus, 
+  setRequireLogin, 
+  setPendingTodo, 
+  updateSortOrder, 
+  todoCreated, 
+  todoUpdated, 
+  todoDeleted 
+} = todoSlice.actions;
 export default todoSlice.reducer;
