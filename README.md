@@ -2,6 +2,9 @@
 
 A Todo application built with React, Node.js, Express, and PostgreSQL.
 
+![ezgif-50a1a8546bae8b](https://github.com/user-attachments/assets/9852c51c-5cc8-480b-9e56-eaa34c2e1f05)
+
+
 ## Features
 
 - Create, Read, Update, and Delete todos
